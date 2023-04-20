@@ -9,14 +9,16 @@ const users = {};
 
 io.on("connection", (socket) => {
   socket.on("new-user-joined", (name) => {
-    users[socket.id] = name;
+    users[name] = socket; 
     socket.broadcast.emit("user-joined", name);
   });
 
-  socket.on("send", (message) => {
-    socket.broadcast.emit("receive", {
-      message: message,
-      name: users[socket.id],
-    });
+  socket.on("send", ({ message, to }) => {
+    if (to in users) {
+      users[to].emit("receive", {
+        message: message,
+        name: users[socket.id],
+      });
+    }
   });
 });
